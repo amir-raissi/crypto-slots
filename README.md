@@ -1,0 +1,2 @@
+# crypto-slots
+Working name
