@@ -7,18 +7,17 @@ import "./PlayToken.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Vendor is Ownable {
-
   // Our Token Contract
-  PlayToken playToken;
+  PLYToken playToken;
 
-  // token price for ETH (this can change ofc)
+  // token price for ETH (this can change ofc to be variable based on jackpot amount)
   uint256 public tokensPerEth = 100;
 
   // Event that log buy operation
   event BuyTokens(address buyer, uint256 amountOfETH, uint256 amountOfTokens);
 
   constructor(address tokenAddress) {
-    playToken = PlayToken(tokenAddress);
+    playToken = PLYToken(tokenAddress);
   }
 
   /**
@@ -27,10 +26,10 @@ contract Vendor is Ownable {
   function buyTokens() public payable returns (uint256 tokenAmount) {
     require(msg.value > 0, "Send ETH to buy some tokens");
 
-    uint256 amountToBuy = msg.value * tokensPerEth;
+    uint256 amountToBuy = (msg.value/1000000000000000000) * tokensPerEth; // need to convert from WEI to ETH
 
     // check if the Vendor Contract has enough amount of tokens for the transaction
-    uint256 vendorBalance = playToken.balanceOf(address(this));
+    uint256 vendorBalance = playToken.getBalance();
     require(vendorBalance >= amountToBuy, "Vendor contract has not enough tokens in its balance");
 
     // Transfer token to the msg.sender
