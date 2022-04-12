@@ -29,7 +29,7 @@ contract Vendor is Ownable {
     uint256 amountToBuy = (msg.value/1000000000000000000) * tokensPerEth; // need to convert from WEI to ETH
 
     // check if the Vendor Contract has enough amount of tokens for the transaction
-    uint256 vendorBalance = playToken.getBalance();
+    uint256 vendorBalance = playToken.balanceOf(address(this));
     require(vendorBalance >= amountToBuy, "Vendor contract has not enough tokens in its balance");
 
     // Transfer token to the msg.sender
