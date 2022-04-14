@@ -1,5 +1,5 @@
 import { expect, use } from 'chai';
-import { ethers } from 'hardhat';
+import { ethers, waffle } from 'hardhat';
 import { solidity } from 'ethereum-waffle';
 import { BigNumber, BigNumberish } from 'ethers';
 
@@ -116,13 +116,12 @@ describe('Vendor Contract', function () {
 		const amount = ethers.utils.parseEther('1');
 		await vendor.connect(address1).buyTokens({ value: amount });
 		await token.connect(address1).approve(vendor.address, 100);
-
+		await token.connect(address1).approve(vendor.address, 10);
 		const game = await vendor.connect(address1).spin(1);
 		const results = await game.wait();
 		console.log(
-			results.events?.filter(
-				(eventObj: any) => eventObj?.event === 'GameResults'
-			)[0]
+			results.events?.filter((eventObj: any) => eventObj?.event === 'Spin')[0]
 		);
+		await expect(vendor.connect(address1).spin(10)).to.emit(vendor, 'Spin');
 	});
 });

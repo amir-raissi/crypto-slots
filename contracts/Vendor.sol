@@ -23,9 +23,6 @@ contract Vendor is Ownable {
         uint256 randNumber3;
     }
 
-    // Not sure we need this as we can just check their balences
-    mapping(address => uint256) winnerBalance;
-
     mapping(address => Game[]) gamesResult;
 
     /**
@@ -43,7 +40,7 @@ contract Vendor is Ownable {
      * @notice Event that log buy operation
      */
     event BuyTokens(address buyer, uint256 amountOfETH, uint256 amountOfTokens);
-    event GameResults(address player, Game game);
+    event Spin(Game);
 
     constructor(address _plyTokenAddress) {
         playToken = PLYToken(_plyTokenAddress);
@@ -163,7 +160,6 @@ contract Vendor is Ownable {
         require(minValue <= bet, "Bet must Exceed The Minimum Bet");
 
         uint256 allowance = playToken.allowance(msg.sender, address(this));
-
         require(allowance >= bet, "Check the token allowance");
 
         // Get users tokens
@@ -177,16 +173,13 @@ contract Vendor is Ownable {
         uint256 randNumber3 = randomValue();
         randNonce += 1;
         uint256 result = calculatePrize(randNumber1, randNumber2, randNumber3);
-        Game memory res = Game(result, randNumber1, randNumber2, randNumber3);
-        gamesResult[msg.sender].push(res);
-        emit GameResults(msg.sender, res);
-
         if (result != 0) {
             // A winner
-            // again not sure the winner balence thing needed
-            winnerBalance[msg.sender] += result;
-            sumPlayersMoney += result;
+            // get some eth
         }
+        Game memory res = Game(result, randNumber1, randNumber2, randNumber3);
+        gamesResult[msg.sender].push(res);
+        emit Spin(res);
     }
 
     /**
