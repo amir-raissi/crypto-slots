@@ -111,7 +111,7 @@ describe('Vendor Contract', function () {
 	it("Allows the User to bet and spin", async () => {
 		const amount = ethers.utils.parseEther('1');
 		await vendor.connect(address1).buyTokens({ value: amount });
-		await token.approve(address1.address, 100)
+		await token.connect(address1).approve(vendor.address, 10)
 		await vendor.connect(address1).spin(10);
 	});
 
