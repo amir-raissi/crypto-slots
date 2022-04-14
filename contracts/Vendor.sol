@@ -62,20 +62,11 @@ contract Vendor is Ownable {
 
     /**
      * @notice Returns how many tokens any given player has
-
      Not sure this is needed either, as we can just call this using token abi on frontend
-     
      */
     function getPlayerBalance() public view returns (uint256) {
         return playToken.balanceOf(msg.sender);
     }
-
-    /**
-     * @notice Allow Owner to add more tokens 
-     (Dont know if this is possible with the way
-     we currently have the token minting so empty for now)
-     */
-    function deposit() public payable onlyOwner {}
 
     /**
      * @notice Returns the most recent game
@@ -173,9 +164,9 @@ contract Vendor is Ownable {
         uint256 randNumber3 = randomValue();
         randNonce += 1;
         uint256 result = calculatePrize(randNumber1, randNumber2, randNumber3);
-        if (result != 0) {
-            // A winner
+        if (result != 0) { // A winner
             // get some eth
+            // this is where the withdraw function would be used.
         }
         Game memory res = Game(result, randNumber1, randNumber2, randNumber3);
         gamesResult[msg.sender].push(res);
