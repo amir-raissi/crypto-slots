@@ -141,6 +141,10 @@ contract Vendor is Ownable {
         require(userBal >= bet, "You Don't Have Enough Tokens");
         require(minValue <= bet, "Bet must Exceed The Minimum Bet");
 
+        // Get users tokens
+        bool sent = playToken.transferFrom(msg.sender, address(this), bet);
+        require(sent, "Could not Transfer tokens");
+
         uint256 randNumber1 = randomValue();
         randNonce += 1;
         uint256 randNumber2 = randomValue();
@@ -148,10 +152,7 @@ contract Vendor is Ownable {
         uint256 randNumber3 = randomValue();
         randNonce += 1;
         uint256 result = calculatePrize(randNumber1, randNumber2, randNumber3);
-        if (result == 0) { // not a winner
-            bool sent = playToken.transferFrom(msg.sender, address(this), bet);
-            require(sent, "Could not Withdaw tokens");
-        } else { // a winner
+        if (result != 0) { // A winner
             winnerBalance[msg.sender] += result;
             sumPlayersMoney += result;
         }
