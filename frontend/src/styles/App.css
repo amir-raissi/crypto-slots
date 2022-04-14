@@ -1,42 +1,25 @@
-.App {
-  text-align: center;
+/* slot machine overrides */
+.slot-machine {
+	pointer-events: none;
+}
+.reel {
+	width: 100px !important;
+	margin-left: 1.3rem;
+}
+.display,
+.slots {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* custom css */
+.container--slots {
+	width: 100vw;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 }
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-button {
-  font-size: calc(10px + 2vmin);
+.button--slots {
+	margin: 0.5rem !important;
 }
