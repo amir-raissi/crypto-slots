@@ -141,6 +141,9 @@ contract Vendor is Ownable {
         require(userBal >= bet, "You Don't Have Enough Tokens");
         require(minValue <= bet, "Bet must Exceed The Minimum Bet");
 
+        uint256 allowance = playToken.allowance(msg.sender, address(this));
+        require(allowance >= bet, "Check the token allowance");
+
         // Get users tokens
         bool sent = playToken.transferFrom(msg.sender, address(this), bet);
         require(sent, "Could not Transfer tokens");
