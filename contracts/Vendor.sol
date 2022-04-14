@@ -23,7 +23,6 @@ contract Vendor is Ownable {
         uint256 randNumber3;
     }
 
-    mapping(address => uint256) winnerBalance;
     mapping(address => Game[]) gamesResult;
 
     /**
@@ -41,6 +40,7 @@ contract Vendor is Ownable {
      * @notice Event that log buy operation
      */
     event BuyTokens(address buyer, uint256 amountOfETH, uint256 amountOfTokens);
+    event Spin(Game);
 
     constructor(address _plyTokenAddress) {
         playToken = PLYToken(_plyTokenAddress);
@@ -156,12 +156,9 @@ contract Vendor is Ownable {
         randNonce += 1;
         uint256 result = calculatePrize(randNumber1, randNumber2, randNumber3);
         if (result != 0) { // A winner
-            winnerBalance[msg.sender] += result;
-            sumPlayersMoney += result;
+            // get some eth
         }
-        gamesResult[msg.sender].push(
-            Game(result, randNumber1, randNumber2, randNumber3)
-        );
+        emit Spin(Game(result, randNumber1, randNumber2, randNumber3));
     }
 
     /**

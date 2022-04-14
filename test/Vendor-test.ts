@@ -1,5 +1,5 @@
 import { expect, use } from 'chai';
-import { ethers } from 'hardhat';
+import { ethers, waffle } from 'hardhat';
 import { solidity } from 'ethereum-waffle';
 import { BigNumber, BigNumberish } from 'ethers';
 
@@ -112,7 +112,7 @@ describe('Vendor Contract', function () {
 		const amount = ethers.utils.parseEther('1');
 		await vendor.connect(address1).buyTokens({ value: amount });
 		await token.connect(address1).approve(vendor.address, 10)
-		await vendor.connect(address1).spin(10);
+		await expect(vendor.connect(address1).spin(10)).to.emit(vendor, "Spin");
 	});
 
 });
