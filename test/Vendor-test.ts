@@ -110,6 +110,7 @@ describe('Vendor Contract', function () {
 
 	it("Allows the User to bet and spin", async () => {
 		const amount = ethers.utils.parseEther('1');
+		await token.increaseAllowance(owner.address, ethers.utils.parseEther('10'))
 		await vendor.connect(address1).buyTokens({ value: amount });
 		await vendor.connect(address1).spin(10);
 	});
