@@ -78,20 +78,40 @@ describe('Vendor Contract', function () {
 
 	it('Withdraws to Owner, success', async () => {
 		const ethOfTokenToBuy = ethers.utils.parseEther('1');
-  
-		// buyTokens operation
 		await vendor.connect(address1).buyTokens({
 		  value: ethOfTokenToBuy,
 		});
-  
-		// withdraw operation
 		const txWithdraw = await vendor.connect(owner).withdraw();
-  
-		// Check that the Vendor's balance has 0 eth
 		const vendorBalance = await ethers.provider.getBalance(vendor.address);
-		expect(vendorBalance).to.equal(0);
-  
-		// Check the the owner balance has changed of 1 eth
+
+		expect(vendorBalance).to.equal(0);  
 		await expect(txWithdraw).to.changeEtherBalance(owner, ethOfTokenToBuy);
 	  });
+
+	it("Allows the Owner to change the Min Bet", async () => {
+		const newVal = 10;
+		await vendor.connect(owner).changeMinValue(newVal)
+		expect(await vendor.minValue()).to.equal(newVal);
+	});
+
+	it("Gets The Current Balance of The Machine", async () => {
+		const amount = ethers.utils.parseEther('1');
+		await vendor.connect(address1).buyTokens({ value: amount });
+		const vendorTokenBal = await vendor.getBalanceSlots();
+		expect(vendorTokenBal).to.equal(vendorTokenSupply.sub(100));
+	});
+
+	it("Gets The Current Balance of The Player", async () => {
+		const amount = ethers.utils.parseEther('1');
+		await vendor.connect(address1).buyTokens({ value: amount });
+		const playerTokenBal = await vendor.connect(address1).getPlayerBalance();
+		expect(playerTokenBal).to.equal(100);
+	});
+
+	it("Allows the User to bet and spin", async () => {
+		const amount = ethers.utils.parseEther('1');
+		await vendor.connect(address1).buyTokens({ value: amount });
+		await vendor.connect(address1).spin(10);
+	});
+
 });
