@@ -26,13 +26,20 @@ contract Vendor is Ownable {
     mapping(address => uint256) winnerBalance;
     mapping(address => Game[]) gamesResult;
 
-    // Our Token Contract
+    /**
+     * @notice Our Custom Token
+     */
     PLYToken playToken;
 
-    // token price for ETH (this can change ofc to be variable based on jackpot amount)
+    /**
+     * @notice token price for ETH 
+     (this can change ofc to be variable based on jackpot amount)
+     */
     uint256 public tokensPerEth = 100;
 
-    // Event that log buy operation
+    /**
+     * @notice Event that log buy operation
+     */
     event BuyTokens(address buyer, uint256 amountOfETH, uint256 amountOfTokens);
 
     constructor(address _plyTokenAddress) {
@@ -43,7 +50,7 @@ contract Vendor is Ownable {
      * @notice Allow Owner to change Min Value
      */
     function changeMinValue(uint256 newMinValue) public onlyOwner {
-        minValue = newMinValue * (1 ether);
+        minValue = newMinValue;
     }
 
     /**
@@ -97,10 +104,7 @@ contract Vendor is Ownable {
                         block.gaslimit +
                         ((uint256(keccak256(abi.encodePacked(msg.sender)))) /
                             (block.timestamp)) +
-                        block.number
-                )
-            )
-        );
+                        block.number)));
 
         return (seed - ((seed / modulus) * modulus));
     }
@@ -132,7 +136,7 @@ contract Vendor is Ownable {
     /**
      * @notice Allows user to bet X num of tokens
      */
-    function spin(uint bet) public {
+    function spin(uint256 bet) public {
         uint256 userBal = playToken.balanceOf(msg.sender);
         require(userBal >= bet, "You Don't Have Enough Tokens");
         require(minValue <= bet, "Bet must Exceed The Minimum Bet");
