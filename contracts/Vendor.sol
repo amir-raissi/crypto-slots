@@ -23,7 +23,9 @@ contract Vendor is Ownable {
         uint256 randNumber3;
     }
 
+    // Not sure we need this as we can just check their balences
     mapping(address => uint256) winnerBalance;
+
     mapping(address => Game[]) gamesResult;
 
     /**
@@ -41,6 +43,7 @@ contract Vendor is Ownable {
      * @notice Event that log buy operation
      */
     event BuyTokens(address buyer, uint256 amountOfETH, uint256 amountOfTokens);
+    event GameResults(address player, Game game);
 
     constructor(address _plyTokenAddress) {
         playToken = PLYToken(_plyTokenAddress);
@@ -62,6 +65,9 @@ contract Vendor is Ownable {
 
     /**
      * @notice Returns how many tokens any given player has
+
+     Not sure this is needed either, as we can just call this using token abi on frontend
+     
      */
     function getPlayerBalance() public view returns (uint256) {
         return playToken.balanceOf(msg.sender);
@@ -77,9 +83,18 @@ contract Vendor is Ownable {
     /**
      * @notice Returns the most recent game
      */
-    function getLastPlayerGame() public view returns (uint256, uint256, uint256, uint256) {
+    function getLastPlayerGame()
+        public
+        view
+        returns (
+            uint256,
+            uint256,
+            uint256,
+            uint256
+        )
+    {
         uint256 length = gamesResult[msg.sender].length - 1;
-        
+
         return (
             gamesResult[msg.sender][length].result,
             gamesResult[msg.sender][length].randNumber1,
@@ -104,7 +119,10 @@ contract Vendor is Ownable {
                         block.gaslimit +
                         ((uint256(keccak256(abi.encodePacked(msg.sender)))) /
                             (block.timestamp)) +
-                        block.number)));
+                        block.number
+                )
+            )
+        );
 
         return (seed - ((seed / modulus) * modulus));
     }
@@ -112,8 +130,11 @@ contract Vendor is Ownable {
     /**
      * @notice Calculates The Prize
      */
-    function calculatePrize( uint256 rand1, uint256 rand2, uint256 rand3) 
-      private view returns (uint256) {
+    function calculatePrize(
+        uint256 rand1,
+        uint256 rand2,
+        uint256 rand3
+    ) private view returns (uint256) {
         if (rand1 == 6 && rand2 == 6 && rand3 == 6) {
             return minValue * 5;
         } else if (rand1 == 5 && rand2 == 5 && rand3 == 5) {
@@ -141,6 +162,10 @@ contract Vendor is Ownable {
         require(userBal >= bet, "You Don't Have Enough Tokens");
         require(minValue <= bet, "Bet must Exceed The Minimum Bet");
 
+        uint256 allowance = playToken.allowance(msg.sender, address(this));
+
+        require(allowance >= bet, "Check the token allowance");
+
         // Get users tokens
         bool sent = playToken.transferFrom(msg.sender, address(this), bet);
         require(sent, "Could not Transfer tokens");
@@ -152,13 +177,16 @@ contract Vendor is Ownable {
         uint256 randNumber3 = randomValue();
         randNonce += 1;
         uint256 result = calculatePrize(randNumber1, randNumber2, randNumber3);
-        if (result != 0) { // A winner
+        Game memory res = Game(result, randNumber1, randNumber2, randNumber3);
+        gamesResult[msg.sender].push(res);
+        emit GameResults(msg.sender, res);
+
+        if (result != 0) {
+            // A winner
+            // again not sure the winner balence thing needed
             winnerBalance[msg.sender] += result;
             sumPlayersMoney += result;
         }
-        gamesResult[msg.sender].push(
-            Game(result, randNumber1, randNumber2, randNumber3)
-        );
     }
 
     /**
