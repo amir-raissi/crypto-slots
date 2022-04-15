@@ -3,19 +3,19 @@ import SlotContainer from './components/SlotContainer';
 import CustomNavbar from './components/CustomNavbar';
 import './styles/App.css';
 
-import { Mainnet, DAppProvider, Config } from '@usedapp/core';
-import { getDefaultProvider } from 'ethers';
+import { Goerli, DAppProvider, Config } from '@usedapp/core';
 
 const config: Config = {
-	readOnlyChainId: Mainnet.chainId,
+	readOnlyChainId: Goerli.chainId,
 	readOnlyUrls: {
-		[Mainnet.chainId]: getDefaultProvider('mainnet'),
+		[Goerli.chainId]:
+			'https://eth-goerli.alchemyapi.io/v2/AxnmGEYn7VDkC4KqfNSFbSW9pHFR7PDO',
 	},
 };
 
 function App() {
 	return (
-		<div className="app">
+		<div className='app'>
 			<DAppProvider config={config}>
 				<CustomNavbar />
 				<SlotContainer />
