@@ -66,47 +66,45 @@ function SlotContainer() {
 	};
 
 	const actionButton = account ? (
-		<div className="container--actions">
+		<div className='container--actions'>
 			<Button
-				className="button--slots"
-				variant="contained"
+				className='button--slots'
+				variant='contained'
 				disabled={spinning}
 				onClick={() => handlePlay()}
 			>
 				{spinning ? 'Good luck!' : 'Play'}
 			</Button>
 			<Button
-				className="button--deactivate"
-				variant="contained"
-				color="error"
+				className='button--deactivate'
+				variant='contained'
+				color='error'
 				onClick={() => deactivate()}
 			>
 				Disconnect
 			</Button>
 		</div>
 	) : (
-		<div className="container--connect">
+		<div className='container--connect'>
 			<Button
 				onClick={() => activateBrowserWallet()}
-				variant="contained"
-				color="info"
+				variant='contained'
+				color='info'
 			>
 				Connect Wallet
 			</Button>
 		</div>
 	);
 	return (
-		<div className="container--slots">
-			<Card className="card" sx={{ minWidth: 275 }}>
+		<div className='container--slots'>
+			<Card className='card' sx={{ minWidth: 275 }}>
 				<CardContent>
-					<Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
+					<Typography sx={{ fontSize: 14 }} color='text.secondary' gutterBottom>
 						{account ? 'Account balance' : 'Welcome!'}
 					</Typography>
-					<Typography sx={{ mt: 1.5 }} variant="h3" component="div">
-						{!!etherBalance && formatEther(etherBalance)}
-					</Typography>
-					<Typography sx={{ mb: 1.5 }} color="text.secondary">
-						{account && 'eth'}
+					<Typography sx={{ mt: 1.5 }} variant='h3' component='div'>
+						{!!etherBalance &&
+							`${parseFloat(formatEther(etherBalance)).toFixed(4)} ETH`}
 					</Typography>
 				</CardContent>
 				<CardActions>{actionButton}</CardActions>
