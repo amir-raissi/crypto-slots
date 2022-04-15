@@ -1,42 +1,46 @@
-.App {
-  text-align: center;
+/* slot machine overrides */
+.slot-machine {
+	pointer-events: none;
+}
+.reel {
+	width: 100px !important;
+	margin-left: 1.3rem;
+	height: 400px !important;
+}
+.display,
+.slots {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* custom css */
+.app {
+	height: 100vh;
+	width: 100vw;
 }
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.container--slots {
+	padding: 5rem;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	height: 40rem;
 }
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.card {
+	height: 16rem;
 }
-
-.App-link {
-  color: #61dafb;
+.container--actions {
+	padding-right: 1rem;
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: space-between;
 }
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-button {
-  font-size: calc(10px + 2vmin);
+.container--connect {
+	height: 4rem;
+	display: flex;
+	flex-direction: column;
+	justify-content: end;
 }
