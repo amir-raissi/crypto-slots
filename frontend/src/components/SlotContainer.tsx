@@ -18,6 +18,8 @@ function SlotContainer() {
 		'orange',
 		'bar',
 	];
+
+	// hardcoded height of slot image
 	const height = 1181;
 	const total = icons.length;
 	const individualHeight = height / total;
