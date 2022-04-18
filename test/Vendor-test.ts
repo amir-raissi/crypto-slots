@@ -68,60 +68,27 @@ describe('Vendor Contract', function () {
 		expect(vendorEthBal).to.equal(amount);
 	});
 
-	it('Withdraw reverted because called by not the owner', async () => {
-		await expect(vendor.connect(address1).withdraw()).to.be.revertedWith(
-			'Ownable: caller is not the owner'
-		);
-	});
-
-	it('Withdraw reverted because theres nothing to withdraw', async () => {
-		await expect(vendor.connect(owner).withdraw()).to.be.revertedWith(
-			'Owner has not balance to withdraw'
-		);
-	});
-
-	it('Withdraws to Owner, success', async () => {
-		const ethOfTokenToBuy = ethers.utils.parseEther('1');
-		await vendor.connect(address1).buyTokens({
-			value: ethOfTokenToBuy,
+	it('Allows for eth to be sent', async () => {
+		const amount = ethers.utils.parseEther('1');
+		const hash = await address1.sendTransaction({
+			to: vendor.address,
+			value: amount,
 		});
-		const txWithdraw = await vendor.connect(owner).withdraw();
-		const vendorBalance = await ethers.provider.getBalance(vendor.address);
-
-		expect(vendorBalance).to.equal(0);
-		await expect(txWithdraw).to.changeEtherBalance(owner, ethOfTokenToBuy);
-	});
-
-	it('Allows the Owner to change the Min Bet', async () => {
-		const newVal = 10;
-		await vendor.connect(owner).changeMinValue(newVal);
-		expect(await vendor.minValue()).to.equal(newVal);
+		expect(await ethers.provider.getBalance(vendor.address)).to.equal(amount);
 	});
 
 	it('Gets The Current Balance of The Machine', async () => {
 		const amount = ethers.utils.parseEther('1');
 		await vendor.connect(address1).buyTokens({ value: amount });
-		const vendorTokenBal = await vendor.getBalanceSlots();
+		const vendorTokenBal = await vendor.getBalanceToken();
 		expect(vendorTokenBal).to.equal(vendorTokenSupply.sub(100));
-	});
-
-	it('Gets The Current Balance of The Player', async () => {
-		const amount = ethers.utils.parseEther('1');
-		await vendor.connect(address1).buyTokens({ value: amount });
-		const playerTokenBal = await vendor.connect(address1).getPlayerBalance();
-		expect(playerTokenBal).to.equal(100);
 	});
 
 	it('Allows the User to bet and spin', async () => {
 		const amount = ethers.utils.parseEther('1');
 		await vendor.connect(address1).buyTokens({ value: amount });
-		await token.connect(address1).approve(vendor.address, 100);
 		await token.connect(address1).approve(vendor.address, 10);
 		const game = await vendor.connect(address1).spin(1);
-		const results = await game.wait();
-		console.log(
-			results.events?.filter((eventObj: any) => eventObj?.event === 'Spin')[0]
-		);
-		await expect(vendor.connect(address1).spin(10)).to.emit(vendor, 'Spin');
+		expect(game).to.emit(vendor, 'Spin');
 	});
 });
