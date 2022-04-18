@@ -11,19 +11,15 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract Vendor is Ownable {
-    uint256 public minValue = 1; // 1 token
-    uint256 public sumPlayersMoney = 0;
-    uint256 modulus = 6;
     uint256 randNonce = 0;
+    uint256 public constant minEthBal = 1 ether / 100;
 
     struct Game {
-        uint256 result;
-        uint256 randNumber1;
-        uint256 randNumber2;
-        uint256 randNumber3;
+        bool result;
+        uint256[3] results;
     }
 
-    mapping(address => Game[]) gamesResult;
+    mapping(address => Game[]) userGameResults;
 
     /**
      * @notice Our Custom Token
@@ -40,63 +36,52 @@ contract Vendor is Ownable {
      * @notice Event that log buy operation
      */
     event BuyTokens(address buyer, uint256 amountOfETH, uint256 amountOfTokens);
-    event SellTokens(address seller, uint256 amountOfTokens, uint256 amountOfETH);
+    event SellTokens(
+        address seller,
+        uint256 amountOfTokens,
+        uint256 amountOfETH
+    );
     event Spin(Game);
+    event Received(address, uint256);
 
     constructor(address _plyTokenAddress) {
         playToken = PLYToken(_plyTokenAddress);
     }
 
     /**
-     * @notice Allow Owner to change Min Value
+     * @notice Returns play token bal for vendor
      */
-    function changeMinValue(uint256 newMinValue) public onlyOwner {
-        minValue = newMinValue;
-    }
-
-    /**
-     * @notice Returns how much is left in the slot machine
-     */
-    function getBalanceSlots() public view returns (uint256) {
+    function getBalanceToken() public view returns (uint256) {
         return playToken.balanceOf(address(this));
     }
 
     /**
-     * @notice Returns how many tokens any given player has
-     Not sure this is needed either, as we can just call this using token abi on frontend
+     * @notice Returns ETH bal for vendor
      */
-    function getPlayerBalance() public view returns (uint256) {
-        return playToken.balanceOf(msg.sender);
+    function getBalanceETH() public view returns (uint256) {
+        return address(this).balance;
     }
 
     /**
-     * @notice Returns the most recent game
+     * @notice Returns the jackpot ammount
      */
-    function getLastPlayerGame()
-        public
-        view
-        returns (
-            uint256,
-            uint256,
-            uint256,
-            uint256
-        )
-    {
-        uint256 length = gamesResult[msg.sender].length - 1;
-
-        return (
-            gamesResult[msg.sender][length].result,
-            gamesResult[msg.sender][length].randNumber1,
-            gamesResult[msg.sender][length].randNumber2,
-            gamesResult[msg.sender][length].randNumber3
-        );
+    function getJackpotAmount() public view returns (uint256) {
+        require(getBalanceETH() > minEthBal, "There is no ETH to win!");
+        return getBalanceETH() - minEthBal;
     }
 
     /**
-     * @notice Not-so-good Random Value Generator
+     * @notice Returns the user's previous game results
      */
-    function randomValue() private view returns (uint256) {
-        uint256 seed = uint256(
+    function getUserGameResults() public view returns (Game[] memory) {
+        return userGameResults[msg.sender];
+    }
+
+    /**
+     * @notice Not-so-good Random Value Generator between 1-10
+     */
+    function getRandomValue() private returns (uint256) {
+        uint256 randNum = uint256(
             keccak256(
                 abi.encodePacked(
                     block.timestamp +
@@ -111,45 +96,35 @@ contract Vendor is Ownable {
                         block.number
                 )
             )
-        );
-
-        return (seed - ((seed / modulus) * modulus));
+        ) % 10;
+        randNonce++;
+        return randNum;
     }
 
     /**
-     * @notice Calculates The Prize
+     * @notice checks if all numbers the same
      */
-    function calculatePrize(
-        uint256 rand1,
-        uint256 rand2,
-        uint256 rand3
-    ) private view returns (uint256) {
-        if (rand1 == 6 && rand2 == 6 && rand3 == 6) {
-            return minValue * 5;
-        } else if (rand1 == 5 && rand2 == 5 && rand3 == 5) {
-            return minValue * 3;
-        } else if (rand1 == 4 && rand2 == 4 && rand3 == 4) {
-            return minValue * 3;
-        } else if (rand1 == 3 && rand2 == 3 && rand3 == 3) {
-            return minValue * 3;
-        } else if (rand1 == 2 && rand2 == 2 && rand3 == 2) {
-            return minValue * 3;
-        } else if (rand1 == 1 && rand2 == 1 && rand3 == 1) {
-            return minValue * 3;
-        } else if ((rand1 == rand2) || (rand1 == rand3) || (rand2 == rand3)) {
-            return minValue;
-        } else {
-            return 0;
+    function evaluateSpin(uint256[3] memory result)
+        private
+        pure
+        returns (bool)
+    {
+        if (result[0] == result[1]) {
+            if (result[0] == result[2]) {
+                return true;
+            }
         }
+        return false;
     }
 
     /**
      * @notice Allows user to bet X num of tokens
      */
     function spin(uint256 bet) public {
+        require(getBalanceETH() > minEthBal, "There's nothing to win!");
         uint256 userBal = playToken.balanceOf(msg.sender);
         require(userBal >= bet, "You Don't Have Enough Tokens");
-        require(minValue <= bet, "Bet must Exceed The Minimum Bet");
+        require(1 <= bet, "Bet must Exceed The Minimum Bet");
 
         uint256 allowance = playToken.allowance(msg.sender, address(this));
         require(allowance >= bet, "Check the token allowance");
@@ -158,45 +133,20 @@ contract Vendor is Ownable {
         bool sent = playToken.transferFrom(msg.sender, address(this), bet);
         require(sent, "Could not Transfer tokens");
 
-        uint256 randNumber1 = randomValue();
-        randNonce += 1;
-        uint256 randNumber2 = randomValue();
-        randNonce += 1;
-        uint256 randNumber3 = randomValue();
-        randNonce += 1;
-        uint256 result = calculatePrize(randNumber1, randNumber2, randNumber3);
-        if (result != 0) { // A winner
-            // get some eth
-            // this is where the withdraw function would be used.
+        uint256[3] memory spinResult = [
+            getRandomValue(),
+            getRandomValue(),
+            getRandomValue()
+        ];
+        bool winner = evaluateSpin(spinResult);
+        Game memory res = Game(winner, spinResult);
+        if (winner) {
+            uint256 amountOfEthToTransfer = getJackpotAmount();
+            payable(msg.sender).transfer(amountOfEthToTransfer);
         }
-        Game memory res = Game(result, randNumber1, randNumber2, randNumber3);
-        gamesResult[msg.sender].push(res);
+
+        userGameResults[msg.sender].push(res);
         emit Spin(res);
-    }
-
-    /**
-     * @notice Allows user to withdraw their winnings
-     Converts tokens to ETH
-     */
-    function sellTokens (uint256 tokenAmountToSell) public {
-        // Check that the requested amount of tokens to sell is more than 0
-        require(tokenAmountToSell > 0, "Specify an amount of token greater than zero");
-
-        // Check that the user's token balance is enough to do the swap
-        uint256 userBalance = yourToken.balanceOf(msg.sender);
-        require(userBalance >= tokenAmountToSell, "Your balance is lower than the amount of tokens you want to sell");
-
-        // Check that the Vendor's balance is enough to do the swap
-        uint256 amountOfETHToTransfer = tokenAmountToSell / tokensPerEth;
-        uint256 ownerETHBalance = address(this).balance;
-        require(ownerETHBalance >= amountOfETHToTransfer, "Vendor has not enough funds to accept the sell request");
-
-        (bool sent) = playToken.transferFrom(msg.sender, address(this), tokenAmountToSell);
-        require(sent, "Failed to transfer tokens from user to vendor");
-
-
-        (sent,) = msg.sender.call{value: amountOfETHToTransfer}("");
-        require(sent, "Failed to send ETH to the user");
     }
 
     /**
@@ -216,14 +166,7 @@ contract Vendor is Ownable {
         return amountToBuy;
     }
 
-    /**
-     * @notice Allow the owner of the contract to withdraw ETH
-     */
-    function withdraw() public onlyOwner {
-        uint256 ownerBalance = address(this).balance;
-        require(ownerBalance > 0, "Owner has not balance to withdraw");
-
-        (bool sent, ) = msg.sender.call{value: address(this).balance}("");
-        require(sent, "Failed to send user balance back to the owner");
+    fallback() external payable {
+        emit Received(msg.sender, msg.value);
     }
 }
