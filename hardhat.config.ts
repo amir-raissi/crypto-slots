@@ -19,4 +19,10 @@ task('accounts', 'Prints the list of accounts', async (taskArgs, hre) => {
  */
 module.exports = {
 	solidity: '0.8.4',
+	networks: {
+		goerli: {
+			url: `https://eth-goerli.alchemyapi.io/v2/AxnmGEYn7VDkC4KqfNSFbSW9pHFR7PDO`,
+			accounts: ['OUR ETH PRIVATE KEY'],
+		},
+	},
 };

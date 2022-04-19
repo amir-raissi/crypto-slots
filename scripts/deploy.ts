@@ -21,7 +21,11 @@ async function main() {
 
 	await token.deployed();
 
+	const Vendor = await hre.ethers.getContractFactory('Vendor');
+	const vendor = await Vendor.deploy(token.address);
+
 	console.log('PLYToken deployed to:', token.address);
+	console.log('Vendor deployed to:', vendor.address);
 
 	exportFrontendFiles();
 }
@@ -33,11 +37,17 @@ function exportFrontendFiles() {
 		fs.mkdirSync(abiDir);
 	}
 
-	const artifact = hre.artifacts.readArtifactSync('PLYToken');
+	const tokenArtifact = hre.artifacts.readArtifactSync('PLYToken');
+	const vendorArtifact = hre.artifacts.readArtifactSync('Vendor');
 
 	fs.writeFileSync(
 		abiDir + '/PLYToken.json',
-		JSON.stringify(artifact, null, 2)
+		JSON.stringify(tokenArtifact, null, 2)
+	);
+
+	fs.writeFileSync(
+		abiDir + '/Vendor.json',
+		JSON.stringify(vendorArtifact, null, 2)
 	);
 }
 
