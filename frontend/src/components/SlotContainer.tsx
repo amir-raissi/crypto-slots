@@ -8,12 +8,16 @@ import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import { useEtherBalance, useEthers } from '@usedapp/core';
 import { formatEther } from '@ethersproject/units';
+import { Box } from '@mui/material';
+import { useGetJackpotAmount } from '../hooks/useVendor';
 
 function SlotContainer() {
 	const { activateBrowserWallet, account, deactivate } = useEthers();
 	const etherBalance = useEtherBalance(account);
+	const jackpotAmount = useGetJackpotAmount();
 	const [play, setPlay] = React.useState(false);
 	const [spinning, setSpinning] = React.useState(false);
+
 	const icons: string[] = [
 		'bell',
 		'cash',
@@ -96,26 +100,37 @@ function SlotContainer() {
 		</div>
 	);
 	return (
-		<div className='container--slots'>
-			<Card className='card' sx={{ minWidth: 275 }}>
-				<CardContent>
-					<Typography sx={{ fontSize: 14 }} color='text.secondary' gutterBottom>
-						{account ? 'Account balance' : 'Welcome!'}
-					</Typography>
-					<Typography sx={{ mt: 1.5 }} variant='h3' component='div'>
-						{!!etherBalance &&
-							`${parseFloat(formatEther(etherBalance)).toFixed(4)} ETH`}
-					</Typography>
-				</CardContent>
-				<CardActions>{actionButton}</CardActions>
-			</Card>
-			<SlotMachine
-				reels={reels}
-				play={play}
-				options={{ reelHeight: height, reelWidth: 100, reelOffset: 20 }}
-				callback={(e) => handleResult(e)}
-			/>
-		</div>
+		<>
+			<Box>
+				<Typography variant='h4' component='h1'>
+					WIN {formatEther(jackpotAmount?._hex ?? 0)} ETH
+				</Typography>
+			</Box>
+			<div className='container--slots'>
+				<Card className='card' sx={{ minWidth: 275 }}>
+					<CardContent>
+						<Typography
+							sx={{ fontSize: 14 }}
+							color='text.secondary'
+							gutterBottom
+						>
+							{account ? 'Account balance' : 'Welcome!'}
+						</Typography>
+						<Typography sx={{ mt: 1.5 }} variant='h3' component='div'>
+							{!!etherBalance &&
+								`${parseFloat(formatEther(etherBalance)).toFixed(4)} ETH`}
+						</Typography>
+					</CardContent>
+					<CardActions>{actionButton}</CardActions>
+				</Card>
+				<SlotMachine
+					reels={reels}
+					play={play}
+					options={{ reelHeight: height, reelWidth: 100, reelOffset: 20 }}
+					callback={(e) => handleResult(e)}
+				/>
+			</div>
+		</>
 	);
 }
 
