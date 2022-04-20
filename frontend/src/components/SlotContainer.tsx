@@ -9,7 +9,11 @@ import Typography from '@mui/material/Typography';
 import { useEtherBalance, useEthers } from '@usedapp/core';
 import { formatEther } from '@ethersproject/units';
 import { Box } from '@mui/material';
-import { useGetJackpotAmount } from '../hooks/useVendor';
+import {
+	useGetJackpotAmount,
+	useVendorContractMethod,
+} from '../hooks/useVendor';
+import { ethers } from 'ethers';
 
 function SlotContainer() {
 	const { activateBrowserWallet, account, deactivate } = useEthers();
@@ -17,6 +21,8 @@ function SlotContainer() {
 	const jackpotAmount = useGetJackpotAmount();
 	const [play, setPlay] = React.useState(false);
 	const [spinning, setSpinning] = React.useState(false);
+	const { state: buyTokenStatus, send: buyToken } =
+		useVendorContractMethod('buyTokens');
 
 	const icons: string[] = [
 		'bell',
@@ -71,6 +77,13 @@ function SlotContainer() {
 
 	const actionButton = account ? (
 		<div className='container--actions'>
+			<Button
+				variant='contained'
+				color='primary'
+				onClick={() => buyToken({ value: ethers.utils.parseEther('1') })}
+			>
+				Buy 100 Tokens
+			</Button>
 			<Button
 				className='button--slots'
 				variant='contained'

@@ -21,3 +21,14 @@ export function useGetJackpotAmount() {
 	}
 	return value?.[0];
 }
+
+export function useVendorContractMethod(methodName: string) {
+	const vendorContractInterface = new ethers.utils.Interface(
+		JSON.stringify(vendorAbi.abi)
+	);
+
+	const vendorContract = new Contract(vendorAddress, vendorContractInterface);
+	const { state, send } = useContractFunction(vendorContract, methodName, {});
+
+	return { state, send };
+}
