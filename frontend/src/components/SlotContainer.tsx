@@ -13,16 +13,20 @@ import {
 	useGetJackpotAmount,
 	useVendorContractMethod,
 } from '../hooks/useVendor';
+import { useTokenBalance } from '../hooks/useToken';
 import { ethers } from 'ethers';
 
 function SlotContainer() {
 	const { activateBrowserWallet, account, deactivate } = useEthers();
 	const etherBalance = useEtherBalance(account);
+	const tokenBalance = useTokenBalance(account);
 	const jackpotAmount = useGetJackpotAmount();
 	const [play, setPlay] = React.useState(false);
 	const [spinning, setSpinning] = React.useState(false);
 	const { state: buyTokenStatus, send: buyToken } =
 		useVendorContractMethod('buyTokens');
+
+	console.log(formatEther(tokenBalance));
 
 	const icons: string[] = [
 		'bell',
@@ -80,7 +84,7 @@ function SlotContainer() {
 			<Button
 				variant='contained'
 				color='primary'
-				onClick={() => buyToken({ value: ethers.utils.parseEther('.011') })}
+				onClick={() => buyToken({ value: ethers.utils.parseEther('.01') })}
 			>
 				Buy 1 Token
 			</Button>

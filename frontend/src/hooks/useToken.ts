@@ -2,12 +2,13 @@ import { Contract, ethers } from 'ethers';
 import { useCall, useContractFunction } from '@usedapp/core';
 import * as PLYTokenAbi from '../abis/PLYToken.json';
 import { plyTokenAddress } from '..';
+import { vendorAddress } from '..';
 
-const PLYContractInterface = new ethers.utils.Interface(
-    JSON.stringify(PLYTokenAbi.abi)
-);
+export function useTokenBalance(address: string | any) {
+    const PLYContractInterface = new ethers.utils.Interface(
+        JSON.stringify(PLYTokenAbi.abi)
+    );
 
-export function useTokenBalance(address: string) {
     const { value, error } =
       useCall(
         address &&
@@ -25,6 +26,10 @@ export function useTokenBalance(address: string) {
   }
 
 export function useTokenAllowance(ownerAddress: string, spenderAddress: string) {
+    const PLYContractInterface = new ethers.utils.Interface(
+        JSON.stringify(PLYTokenAbi.abi)
+    );
+
     const { value, error } =
       useCall(
         ownerAddress &&
@@ -42,15 +47,19 @@ export function useTokenAllowance(ownerAddress: string, spenderAddress: string) 
     return value?.[0]
   }
 
-export function useTokenApprove(spenderAddress: string, amount: number) {
+export function useTokenApprove(amount: number) {
+    const PLYContractInterface = new ethers.utils.Interface(
+        JSON.stringify(PLYTokenAbi.abi)
+    );
+
     const { value, error } =
       useCall(
-        spenderAddress &&
+        vendorAddress &&
         amount &&
           plyTokenAddress && {
             contract: new Contract(plyTokenAddress, PLYContractInterface),
             method: 'approve',
-            args: [spenderAddress, amount],
+            args: [vendorAddress, amount],
           }
       ) ?? {}
     if(error) {
@@ -62,6 +71,10 @@ export function useTokenApprove(spenderAddress: string, amount: number) {
 
 
 export function useTokenContractMethod(methodName: string) {
+    const PLYContractInterface = new ethers.utils.Interface(
+        JSON.stringify(PLYTokenAbi.abi)
+    );
+
 	const plyContract = new Contract(plyTokenAddress, PLYContractInterface);
 	const { state, send } = useContractFunction(plyContract, methodName, {});
 
