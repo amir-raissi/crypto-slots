@@ -80,9 +80,9 @@ function SlotContainer() {
 			<Button
 				variant='contained'
 				color='primary'
-				onClick={() => buyToken({ value: ethers.utils.parseEther('1') })}
+				onClick={() => buyToken({ value: ethers.utils.parseEther('.011') })}
 			>
-				Buy 100 Tokens
+				Buy 1 Token
 			</Button>
 			<Button
 				className='button--slots'
