@@ -4,8 +4,8 @@ import { DAppProvider, Config, Goerli } from '@usedapp/core';
 import './styles/index.css';
 import App from './App';
 
-export const plyTokenAddress = '0x3100D1cdc128e4A4bb53209865B5Be264d39e2E1';
-export const vendorAddress = '0xAc4e66c89D9000A5788fDf2a3545fa35dD18a25E';
+export const plyTokenAddress = '0x8446090Ab76b8318094c91d5434c6385b1C12626';
+export const vendorAddress = '0xe4c4857CbE79D01969175bD972Aff2800c16347f';
 
 const config: Config = {
 	readOnlyChainId: Goerli.chainId,

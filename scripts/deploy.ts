@@ -6,6 +6,7 @@
 import * as hre from 'hardhat';
 import * as fs from 'fs';
 import { Contract } from 'ethers';
+import { ethers } from 'hardhat';
 
 async function main() {
 	// Hardhat always runs the compile task when running scripts with its command
@@ -16,15 +17,17 @@ async function main() {
 	// await hre.run('compile');
 
 	// We get the contract to deploy
+
 	const PLYToken = await hre.ethers.getContractFactory('PLYToken');
 	const token = await PLYToken.deploy();
 
 	await token.deployed();
 
+	console.log('PLYToken deployed to:', token.address);
+
 	const Vendor = await hre.ethers.getContractFactory('Vendor');
 	const vendor = await Vendor.deploy(token.address);
 
-	console.log('PLYToken deployed to:', token.address);
 	console.log('Vendor deployed to:', vendor.address);
 
 	exportFrontendFiles();

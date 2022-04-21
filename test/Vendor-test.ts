@@ -32,16 +32,16 @@ describe('Vendor Contract', function () {
 		expect(vendorTokenSupply).to.equal(1000000);
 	});
 
-	it('Reverts the Buy Function if 0 ETH is sent', async () => {
+	it('Reverts the Buy Function if less than .01 ETH is sent', async () => {
 		const amount = ethers.utils.parseEther('0');
 		await expect(
 			vendor.connect(address1).buyTokens({
 				value: amount,
 			})
-		).to.be.revertedWith('Send ETH to buy some tokens');
+		).to.be.revertedWith('Send at least .01 ETH to buy some tokens');
 	});
 
-	it("Reverts the Buy Function if the Vendor Doesn't Have Enough ETH", async () => {
+	it("Reverts the Buy Function if the Vendor Doesn't Have Enough tokens", async () => {
 		const amount1 = ethers.utils.parseEther('9999');
 		const amount2 = ethers.utils.parseEther('3');
 		await vendor.connect(address3).buyTokens({ value: amount1 });

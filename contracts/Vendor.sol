@@ -24,7 +24,7 @@ contract Vendor is Ownable {
     /**
      * @notice Our Custom Token
      */
-    PLYToken playToken;
+    PLYToken internal playToken;
 
     /**
      * @notice token price for ETH 
@@ -44,7 +44,7 @@ contract Vendor is Ownable {
     event Spin(Game);
     event Received(address, uint256);
 
-    constructor(address _plyTokenAddress) {
+    constructor(address _plyTokenAddress) payable {
         playToken = PLYToken(_plyTokenAddress);
     }
 
@@ -120,41 +120,45 @@ contract Vendor is Ownable {
     /**
      * @notice Allows user to bet X num of tokens
      */
-    function spin(uint256 bet) public {
+    function spin(uint256 amountOfTokens) public {
         require(getBalanceETH() > minEthBal, "There's nothing to win!");
         uint256 userBal = playToken.balanceOf(msg.sender);
-        require(userBal >= bet, "You Don't Have Enough Tokens");
-        require(1 <= bet, "Bet must Exceed The Minimum Bet");
+        require(userBal >= amountOfTokens, "You Don't Have Enough Tokens");
+        require(1 <= amountOfTokens, "Bet must Exceed The Minimum Bet");
 
         uint256 allowance = playToken.allowance(msg.sender, address(this));
-        require(allowance >= bet, "Check the token allowance");
+        require(allowance >= amountOfTokens, "Check the token allowance");
 
         // Get users tokens
-        bool sent = playToken.transferFrom(msg.sender, address(this), bet);
+        bool sent = playToken.transferFrom(
+            msg.sender,
+            address(this),
+            amountOfTokens
+        );
         require(sent, "Could not Transfer tokens");
-
-        uint256[3] memory spinResult = [
-            getRandomValue(),
-            getRandomValue(),
-            getRandomValue()
-        ];
-        bool winner = evaluateSpin(spinResult);
-        Game memory res = Game(winner, spinResult);
-        if (winner) {
-            uint256 amountOfEthToTransfer = getJackpotAmount();
-            payable(msg.sender).transfer(amountOfEthToTransfer);
+        for (uint256 i = 0; i < amountOfTokens; i++) {
+            uint256[3] memory spinResult = [
+                getRandomValue(),
+                getRandomValue(),
+                getRandomValue()
+            ];
+            bool winner = evaluateSpin(spinResult);
+            Game memory res = Game(winner, spinResult);
+            if (winner) {
+                uint256 amountOfEthToTransfer = getJackpotAmount();
+                payable(msg.sender).transfer(amountOfEthToTransfer);
+            }
+            userGameResults[msg.sender].push(res);
+            emit Spin(res);
         }
-
-        userGameResults[msg.sender].push(res);
-        emit Spin(res);
     }
 
     /**
      * @notice Allow users to buy token for ETH
      */
     function buyTokens() public payable returns (uint256 tokenAmount) {
-        require(msg.value > 0, "Send ETH to buy some tokens");
-        uint256 amountToBuy = (msg.value / 10**18) * tokensPerEth;
+        require(msg.value > 0, "Send at least .01 ETH to buy some tokens");
+        uint256 amountToBuy = (msg.value * tokensPerEth);
 
         uint256 bal = playToken.balanceOf(address(this));
         require(bal >= amountToBuy, "Ran out of tokens");
