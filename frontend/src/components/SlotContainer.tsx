@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import SlotMachine from 'react-slot-machine-gen';
 import Slots from '../assets/slots.jpg';
 import Button from '@mui/material/Button';
@@ -7,14 +7,18 @@ import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import { useEtherBalance, useEthers } from '@usedapp/core';
-import { formatEther } from '@ethersproject/units';
+import { formatEther, parseEther } from '@ethersproject/units';
 import { Box } from '@mui/material';
 import {
 	useGetJackpotAmount,
 	useVendorContractMethod,
 } from '../hooks/useVendor';
-import { useTokenBalance } from '../hooks/useToken';
-import { ethers } from 'ethers';
+import {
+	useTokenBalance,
+	useTokenContractMethod,
+	useTokenAllowance,
+} from '../hooks/useToken';
+import { vendorAddress } from '..';
 
 function SlotContainer() {
 	const { activateBrowserWallet, account, deactivate } = useEthers();
@@ -25,6 +29,25 @@ function SlotContainer() {
 	const [spinning, setSpinning] = React.useState(false);
 	const { state: buyTokenStatus, send: buyToken } =
 		useVendorContractMethod('buyTokens');
+	const { state: approveStatus, send: approve } =
+		useTokenContractMethod('approve');
+	const { state: spinStatus, send: spin } = useVendorContractMethod('spin');
+	const allowance = useTokenAllowance(account);
+
+	useEffect(() => {
+		console.log(approveStatus.status);
+		console.log(formatEther(allowance ?? '0'));
+		if (approveStatus.status == 'Success' && allowance) {
+			spin(allowance);
+		}
+	}, [approveStatus]);
+
+	useEffect(async () => {
+		console.log(spinStatus);
+		if (spinStatus.status === 'Success') {
+			console.log(await spinStatus.transaction?.wait());
+		}
+	}, [spinStatus]);
 
 	const icons: string[] = [
 		'bell',
@@ -74,8 +97,9 @@ function SlotContainer() {
 	};
 
 	const handlePlay = () => {
-		setSpinning(true);
-		setPlay(!play);
+		approve(vendorAddress, parseEther('1'));
+		// setSpinning(true);
+		// setPlay(!play);
 	};
 
 	const actionButton = account ? (
@@ -83,7 +107,7 @@ function SlotContainer() {
 			<Button
 				variant='contained'
 				color='primary'
-				onClick={() => buyToken({ value: ethers.utils.parseEther('.01') })}
+				onClick={() => buyToken({ value: parseEther('.01') })}
 			>
 				Buy 1 Token
 			</Button>
