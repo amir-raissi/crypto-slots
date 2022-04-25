@@ -66,8 +66,10 @@ contract Vendor is Ownable {
      * @notice Returns the jackpot ammount
      */
     function getJackpotAmount() public view returns (uint256) {
-        require(getBalanceETH() > minEthBal, "There is no ETH to win!");
-        return getBalanceETH() - minEthBal;
+        if (getBalanceETH() > minEthBal) {
+            return getBalanceETH() - minEthBal;
+        }
+        return 0;
     }
 
     /**
@@ -80,7 +82,7 @@ contract Vendor is Ownable {
     /**
      * @notice Not-so-good Random Value Generator between 1-10
      */
-    function getRandomValue() private returns (uint256) {
+    function getRandomNumbers() private returns (uint256[3] memory) {
         uint256 randNum = uint256(
             keccak256(
                 abi.encodePacked(
@@ -96,9 +98,11 @@ contract Vendor is Ownable {
                         block.number
                 )
             )
-        ) % 10;
+        );
         randNonce++;
-        return randNum;
+        uint256 randNum2 = (randNum % 128) % 10;
+        uint256 randNum3 = (randNum % 256) % 10;
+        return [randNum % 10, randNum2, randNum3];
     }
 
     /**
@@ -124,7 +128,6 @@ contract Vendor is Ownable {
         require(getBalanceETH() > minEthBal, "There's nothing to win!");
         uint256 userBal = playToken.balanceOf(msg.sender);
         require(userBal >= amountOfTokens, "You Don't Have Enough Tokens");
-        require(1 <= amountOfTokens, "Bet must Exceed The Minimum Bet");
 
         uint256 allowance = playToken.allowance(msg.sender, address(this));
         require(allowance >= amountOfTokens, "Check the token allowance");
@@ -136,21 +139,16 @@ contract Vendor is Ownable {
             amountOfTokens
         );
         require(sent, "Could not Transfer tokens");
-        for (uint256 i = 0; i < amountOfTokens; i++) {
-            uint256[3] memory spinResult = [
-                getRandomValue(),
-                getRandomValue(),
-                getRandomValue()
-            ];
-            bool winner = evaluateSpin(spinResult);
-            Game memory res = Game(winner, spinResult);
-            if (winner) {
-                uint256 amountOfEthToTransfer = getJackpotAmount();
-                payable(msg.sender).transfer(amountOfEthToTransfer);
-            }
-            userGameResults[msg.sender].push(res);
-            emit Spin(res);
+
+        uint256[3] memory spinResult = getRandomNumbers();
+        bool winner = evaluateSpin(spinResult);
+        Game memory res = Game(winner, spinResult);
+        if (winner) {
+            uint256 amountOfEthToTransfer = getJackpotAmount();
+            payable(msg.sender).transfer(amountOfEthToTransfer);
         }
+        userGameResults[msg.sender].push(res);
+        emit Spin(res);
     }
 
     /**

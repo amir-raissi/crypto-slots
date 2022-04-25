@@ -35,17 +35,28 @@ function SlotContainer() {
 	const allowance = useTokenAllowance(account);
 
 	useEffect(() => {
-		console.log(approveStatus.status);
-		console.log(formatEther(allowance ?? '0'));
 		if (approveStatus.status == 'Success' && allowance) {
-			spin(allowance);
+			spin(parseEther('1'));
 		}
-	}, [approveStatus]);
+	}, [approveStatus.status]);
 
-	useEffect(async () => {
+	useEffect(() => {
 		console.log(spinStatus);
 		if (spinStatus.status === 'Success') {
-			console.log(await spinStatus.transaction?.wait());
+			console.log(
+				'Winner? ' +
+					// @ts-expect-error
+					spinStatus.receipt?.events?.filter(
+						(event: any) => event.event === 'Spin'
+					)[0].args[0][0]
+			);
+			console.log(
+				'Spin results are ',
+				// @ts-expect-error
+				spinStatus.receipt?.events
+					?.filter((event: any) => event.event === 'Spin')[0]
+					.args[0][1]?.map((bigResult: any) => bigResult.toString())
+			);
 		}
 	}, [spinStatus]);
 
@@ -97,7 +108,12 @@ function SlotContainer() {
 	};
 
 	const handlePlay = () => {
-		approve(vendorAddress, parseEther('1'));
+		if (parseInt(formatEther(allowance))) {
+			spin(parseEther('1'));
+		} else {
+			approve(vendorAddress, parseEther('1'));
+		}
+
 		// setSpinning(true);
 		// setPlay(!play);
 	};
@@ -127,6 +143,14 @@ function SlotContainer() {
 			>
 				Disconnect
 			</Button>
+			<Button
+				className='button--deactivate'
+				variant='contained'
+				color='primary'
+				onClick={() => spin(parseEther(0.01 + ''))}
+			>
+				Spin
+			</Button>
 		</div>
 	) : (
 		<div className='container--connect'>
@@ -143,7 +167,7 @@ function SlotContainer() {
 		<>
 			<Box>
 				<Typography variant='h4' component='h1'>
-					WIN {formatEther(jackpotAmount?._hex ?? 0)} ETH
+					WIN {formatEther(jackpotAmount ?? 0)} ETH
 				</Typography>
 			</Box>
 			<div className='container--slots'>
