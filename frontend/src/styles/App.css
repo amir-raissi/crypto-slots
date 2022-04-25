@@ -1,46 +1,50 @@
 /* slot machine overrides */
 .slot-machine {
-	pointer-events: none;
+  pointer-events: none;
 }
 .reel {
-	width: 100px !important;
-	margin-left: 1.3rem;
-	height: 400px !important;
+  width: 100px !important;
+  margin: 1rem 0 0 1.4rem;
+  height: 420px !important;
 }
 .display,
 .slots {
-	display: flex;
-	flex-direction: row;
-	justify-content: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
 }
 
 /* custom css */
 .app {
-	height: 100vh;
-	width: 100vw;
+  height: 100vh;
+  width: 100vw;
 }
 .container--slots {
-	padding: 5rem;
-	display: flex;
-	flex-direction: row;
-	justify-content: center;
-	align-items: center;
-	height: 40rem;
+  padding: 5rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  height: 40rem;
 }
 .card {
-	height: 16rem;
+  height: 16rem;
 }
 .container--actions {
-	padding-right: 1rem;
-	width: 100%;
-	display: flex;
-	flex-direction: row;
-	justify-content: space-between;
-	align-items: space-between;
+  padding-right: 1rem;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: space-between;
+}
+.container--actions > button {
+  margin: 0.3rem;
 }
 .container--connect {
-	height: 4rem;
-	display: flex;
-	flex-direction: column;
-	justify-content: end;
+  height: 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
 }
